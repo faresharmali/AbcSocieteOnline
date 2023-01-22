@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Historique</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="Save_btn">Imprimer</div>
+
+    <div class="logo_container">
+      <img id="societeImg" />
+    </div>
+    <h1 class="historyTitle">Historique des Réglements</h1>
+    <h2 class="historystuff"  id="Date">Periode : </h2>
+    <h2 class="historystuff"  id="periode">Periode : </h2>
+    <h2 class="historystuff"  id="Total">Periode : </h2>
+    <div class="History_table_container"></div>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      ipcRenderer.on("History", (e, result) => {
+        document.querySelector("#societeImg").setAttribute("src", result.logo);
+        const addData = (dataList) => {
+          let table = document.createElement("table");
+          table.setAttribute("id", "tableStyle");
+          let row = document.createElement("tr");
+          let Column1 = document.createElement("th");
+          Column1.append(document.createTextNode("N°"));
+          let Column2 = document.createElement("th");
+          if(result.type=="fournisseurs"){
+            Column2.append(document.createTextNode("Fournisseur"));
+
+          }
+            else{
+
+              Column2.append(document.createTextNode("Client"));
+            }
+          let Column5 = document.createElement("th");
+          Column5.append(document.createTextNode("Montant"));
+          let Column6 = document.createElement("th");
+          Column6.append(document.createTextNode("Mode De Paiment"));
+          let Column7 = document.createElement("th");
+          Column7.append(document.createTextNode("Date"));
+          row.appendChild(Column1);
+          row.appendChild(Column2);
+
+          row.appendChild(Column5);
+          row.appendChild(Column6);
+          row.appendChild(Column7);
+          table.appendChild(row);
+          dataList.forEach((b) => {
+            row = document.createElement("tr");
+
+            Column1 = document.createElement("td");
+            Column1.append(document.createTextNode(result.Data.indexOf(b) + 1));
+            Column2 = document.createElement("td");
+            if(result.type=="fournisseurs"){
+              Column2.append(
+              document.createTextNode(
+                JSON.parse(b.client).Nom + " " + JSON.parse(b.client).prenom
+              )
+            );
+
+            }else{
+              Column2.append(
+              document.createTextNode(
+                JSON.parse(b.client).nom + " " + JSON.parse(b.client).prenom
+              )
+            );
+
+            }
+           
+            Column5 = document.createElement("td");
+            Column5.append(document.createTextNode(b.montant + " Da"));
+            Column6 = document.createElement("td");
+            Column6.append(document.createTextNode(b.ModePayement));
+            Column7 = document.createElement("td");
+            Column7.append(
+              document.createTextNode(
+                JSON.parse(b.date).day +
+                  "/" +
+                  JSON.parse(b.date).month +
+                  "/" +
+                  JSON.parse(b.date).year
+              )
+            );
+            row.appendChild(Column1);
+            row.appendChild(Column2);
+
+            row.appendChild(Column5);
+            row.appendChild(Column6);
+            row.appendChild(Column7);
+            table.appendChild(row);
+          });
+          document.querySelector(".History_table_container").appendChild(table);
+        };
+        let date=new Date()
+        document.querySelector(".historyTitle").innerHTML = result.title;
+        document.querySelector("#periode").innerHTML ="Periode : "+ result.periode;
+        document.querySelector("#Total").innerHTML ="Total : "+ result.Total+" Da";
+        document.querySelector("#Date").innerHTML ="Date : "+date.getDate()+"/"+(date.getMonth()+1)+"/"+date.getFullYear()
+        let pages;
+        if ((result.Data.length / 20) % 1 == 0) pages = result.Data.length;
+        else pages = Math.trunc(result.Data.length / 20) + 1;
+        console.log(pages);
+
+        for (let i = 0; i < pages; i++) {
+          addData(result.Data.slice(20 * i, 20 * (i + 1)));
+        }
+      });
+      document.querySelector("#Save_btn").addEventListener("click", () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>

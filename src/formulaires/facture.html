@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+
+    <title>Facture </title>
+  </head>
+  <body>
+    <section id="window" class="devis">
+      <div id="Save_btn">Imprimer</div>
+
+      <section id="contnet" class="devis">
+        <div class="logo_container">
+          <img id="societeImg" />
+        </div>
+
+        <div class="societe_info_container">
+          <div class="title">
+            <h1>Facture </h1>
+          </div>
+        </div>
+    <div class="entitycontainer">
+        <div class="societe_details">
+          <h1 id="societeName"></h1>
+
+          <h2>
+            <span style="font-weight: bold">Adresse :  </span> <span
+              id="societeadresse2"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">Telephone : </span> <span
+              id="societeaNum2"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">R.C : </span> <span
+              id="SocieteRc"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">N.I.F : </span> <span
+              id="SocieteNif"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">ART : </span> <span
+              id="SocieteART"
+            ></span>
+          </h2>
+          <div class="bail_detail">
+            <h2>Réf De Facture  : <span id="reffacture"></span> </h2>
+            <h2 id="date"></h2>
+          </div>
+        </div>
+        <div class="societe_details">
+          <h2>
+            <span style="font-weight: bold">Client : </span> <span
+              id="clientName"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">Adresse :  </span> <span
+              id="clientAdresse"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">Telephone : </span> <span
+              id="ClientPhone"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">R.C : </span> <span
+              id="ClientRC"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">N.I.F : </span> <span
+              id="ClientNIF"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">ART : </span> <span
+              id="ClientART"
+            ></span>
+          </h2>
+        </div>
+      </div>
+        <div class="table_container">
+          <table id="customers2" class="facture_table">
+            <thead>
+              <tr>
+                <th>Produits</th>
+                <th>Prix Unité</th>
+                <th>Qte</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+           
+          </table>
+
+        </div>
+     
+        <h2 class="montantEnLettre"></h2>
+        <h2 class="montantEnLettre mode"></h2>
+
+        <div class="societe_details terms">
+         
+        </div>
+      </section>
+      <div class="footer">
+        <h2 id="societeDetails"></h2>
+        <h2 id="societeadresse"></h2>
+        <h2 id="societeaNum"></h2>
+        <h2 id="societeaData"></h2>
+      </div>
+    </section>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      ipcRenderer.on("factureDetails", (e, result) => {
+        let dateA=new Date();
+        document.querySelector("#reffacture").innerHTML = result.ref
+
+        let Produits = JSON.parse(JSON.parse(result.Devis).produits);
+
+        let RemiseTotal=0;
+        let PrixAvantTaxe=0;
+        Produits.forEach((p) => {
+          RemiseTotal+=p.prixChoisi*p.quantityAchete*(p.remise/100);
+          PrixAvantTaxe+=p.prixChoisi*p.quantityAchete
+        })
+        const table2 = document.querySelector(".table2");
+        const table = document.querySelector(".facture_table");
+        Produits.forEach((p) => {
+          var node;
+          let child = document.createElement("tr");
+          let nom = document.createElement("td");
+          node = document.createTextNode(p.nom);
+          nom.appendChild(node);
+          child.appendChild(nom);
+          let category = document.createElement("td");
+          node = document.createTextNode(p.prixChoisi );
+          category.appendChild(node);
+          child.appendChild(category);
+          let quantityAchete = document.createElement("td");
+          node = document.createTextNode(p.quantityAchete);
+          quantityAchete.appendChild(node);
+          child.appendChild(quantityAchete);
+          let Prix = document.createElement("td");
+          node = document.createTextNode(
+            p.quantityAchete * p.prixChoisi 
+          );
+          Prix.appendChild(node);
+          child.appendChild(Prix);
+        
+
+        
+          table.appendChild(child);
+        });
+      
+        let child = document.createElement("tr");
+        let emptyTd1 = document.createElement("td");
+        emptyTd1.classList.add("emptyTd")
+        let emptyTd2 = document.createElement("td");
+        emptyTd2.classList.add("emptyTd")
+      
+
+        let nom = document.createElement("td");
+        nom.style.fontWeight = "600";
+        node = document.createTextNode("Total HT");
+        nom.appendChild(node);
+        child.appendChild(emptyTd1);
+        child.appendChild(emptyTd2);
+       
+        child.appendChild(nom);
+        nom = document.createElement("td");
+        node = document.createTextNode(
+          PrixAvantTaxe
+        );
+        nom.appendChild(node);
+        child.appendChild(nom);
+        table.appendChild(child);
+
+        if(RemiseTotal>0){
+
+        child = document.createElement("tr");
+         emptyTd1 = document.createElement("td");
+        emptyTd1.classList.add("emptyTd")
+         emptyTd2 = document.createElement("td");
+        emptyTd2.classList.add("emptyTd")
+       
+         nom = document.createElement("td");
+        nom.style.fontWeight = "600";
+        node = document.createTextNode("Remise");
+        nom.appendChild(node);
+        child.appendChild(emptyTd1);
+        child.appendChild(emptyTd2);
+        child.appendChild(nom);
+        nom = document.createElement("td");
+        node = document.createTextNode(RemiseTotal);
+        nom.appendChild(node);
+        child.appendChild(nom);
+        table.appendChild(child);
+
+        child = document.createElement("tr");
+         emptyTd1 = document.createElement("td");
+        emptyTd1.classList.add("emptyTd")
+         emptyTd2 = document.createElement("td");
+        emptyTd2.classList.add("emptyTd")
+       
+         nom = document.createElement("td");
+        nom.style.fontWeight = "600";
+        node = document.createTextNode("Montant HT");
+        nom.appendChild(node);
+        child.appendChild(emptyTd1);
+        child.appendChild(emptyTd2);
+       
+        child.appendChild(nom);
+        nom = document.createElement("td");
+        node = document.createTextNode(JSON.parse(result.Devis).prix_ht);
+        nom.appendChild(node);
+        child.appendChild(nom);
+        table.appendChild(child);
+
+
+       }
+       
+
+        child = document.createElement("tr");
+         emptyTd1 = document.createElement("td");
+        emptyTd1.classList.add("emptyTd")
+         emptyTd2 = document.createElement("td");
+        emptyTd2.classList.add("emptyTd")
+       
+         nom = document.createElement("td");
+        nom.style.fontWeight = "600";
+        node = document.createTextNode("TVA 19%");
+        nom.appendChild(node);
+        child.appendChild(emptyTd1);
+        child.appendChild(emptyTd2);
+       
+        child.appendChild(nom);
+        nom = document.createElement("td");
+        node = document.createTextNode(JSON.parse(result.Devis).prix_ht*0.19);
+        nom.appendChild(node);
+        child.appendChild(nom);
+        table.appendChild(child);
+  
+        child = document.createElement("tr");
+         emptyTd1 = document.createElement("td");
+        emptyTd1.classList.add("emptyTd")
+         emptyTd2 = document.createElement("td");
+        emptyTd2.classList.add("emptyTd")
+       
+         nom = document.createElement("td");
+        nom.style.fontWeight = "600";
+        node = document.createTextNode("Total TTC");
+        nom.appendChild(node);
+        child.appendChild(emptyTd1);
+        child.appendChild(emptyTd2);
+        
+        child.appendChild(nom);
+        nom = document.createElement("td");
+        node = document.createTextNode((JSON.parse(result.Devis).prix_ht+JSON.parse(result.Devis).prix_ht*0.19));
+        nom.appendChild(node);
+        child.appendChild(nom);
+        table.appendChild(child);
+        if(result.Reglement=="Especes"){
+
+        child = document.createElement("tr");
+         emptyTd1 = document.createElement("td");
+        emptyTd1.classList.add("emptyTd")
+         emptyTd2 = document.createElement("td");
+         emptyTd2.classList.add("emptyTd")
+
+         nom = document.createElement("td");
+        nom.style.fontWeight = "600";
+          node = document.createTextNode("Timbre 1%");
+        nom.appendChild(node);
+        child.appendChild(emptyTd1);
+        child.appendChild(emptyTd2);
+        child.appendChild(nom);
+        nom = document.createElement("td");
+        node = document.createTextNode(((JSON.parse(result.Devis).prix_ht+JSON.parse(result.Devis).prix_ht*0.19)*0.01).toFixed(2));
+        nom.appendChild(node);
+        child.appendChild(nom);
+        table.appendChild(child);
+        child = document.createElement("tr");
+         emptyTd1 = document.createElement("td");
+        emptyTd1.classList.add("emptyTd")
+         emptyTd2 = document.createElement("td");
+        emptyTd2.classList.add("emptyTd")
+        
+         nom = document.createElement("td");
+        nom.style.fontWeight = "600";
+        node = document.createTextNode("Net A Payer");
+        nom.appendChild(node);
+        child.appendChild(emptyTd1);
+        child.appendChild(emptyTd2);
+       
+        child.appendChild(nom);
+        nom = document.createElement("td");
+        node = document.createTextNode(JSON.parse(result.Devis).prix_ttc.toFixed(2));
+        nom.appendChild(node);
+        child.appendChild(nom);
+        table.appendChild(child);
+        }
+      
+  
+
+
+
+        let Client =JSON.parse(JSON.parse(result.Devis).client_id)
+        let societe = JSON.parse(result.societe);
+        
+        let montant =result.prix_ttc;
+        let montantLettre = result.montantEnLettre;
+        let date = JSON.parse(result.date);
+        console.log("client is",Client);
+        document.querySelector(".montantEnLettre").innerHTML =
+          "Arrêter la présente facture à la somme de : " + result.montantEnLettre;
+        document.querySelector(".mode").innerHTML =
+          "Mode De Paiment  : " + result.Reglement;
+        document.querySelector("#clientName").innerHTML =
+          Client.nom + " " + Client.prenom;
+        document.querySelector("#clientAdresse").innerHTML = Client.adresse;
+        document.querySelector("#ClientRC").innerHTML = Client.nrc;
+        document.querySelector("#ClientNIF").innerHTML = Client.nif;
+        document.querySelector("#ClientART").innerHTML = Client.Narticle;
+        document.querySelector("#ClientPhone").innerHTML = Client.num;
+        document.querySelector("#date").innerHTML =
+          "date :" + date.day + "/" + date.month + "/" + date.year;
+        document.querySelector("#societeName").innerHTML = societe.nom;
+        document
+          .querySelector("#societeImg")
+          .setAttribute("src", result.logo);
+        document.querySelector("#societeDetails").innerHTML =
+         "Societe :" +societe.nom + "," + societe.description;
+        document.querySelector("#societeadresse").innerHTML =
+          "Adresse : " + societe.adresse;
+        document.querySelector("#societeadresse2").innerHTML =
+       societe.adresse;
+        document.querySelector("#societeaNum").innerHTML =
+          "Numero de telephone :" + societe.num + "/ email : " + societe.email;
+        document.querySelector("#societeaNum2").innerHTML = societe.num ;
+        document.querySelector("#SocieteRc").innerHTML =societe.NRC ;
+        document.querySelector("#SocieteNif").innerHTML =societe.NIF ;
+        document.querySelector("#SocieteART").innerHTML =societe.NIF ;
+        document.querySelector("#societeaData").innerHTML =
+          "N.R.C : " +
+          societe.NRC +
+          " / N.I.F : " +
+          societe.NIF +
+          " / A.R.T : " +
+          societe.ART;      });
+      let { jsPDF } = require("jspdf");
+
+      document.querySelector("#Save_btn").addEventListener("click", () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>

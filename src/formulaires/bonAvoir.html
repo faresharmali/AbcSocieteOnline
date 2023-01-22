@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+
+    <title>Bon de retour</title>
+  </head>
+  <body>
+    <section id="window" class="devis">
+      <div id="Save_btn">Imprimer</div>
+
+      <section id="contnet" class="devis">
+        <div class="logo_container">
+          <img id="societeImg" />
+        </div>
+
+        <div class="societe_info_container">
+          <h1 id="societeName"></h1>
+          <h3 id="societeDis"></h3>
+          <div class="title">
+            <h1>Bon de retour</h1>
+          </div>
+        </div>
+
+        <div class="societe_details">
+          <h2>
+            <span style="font-weight: bold">Client</span> :<span
+              id="clientName"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">Adresse</span> :<span
+              id="clientAdresse"
+            ></span>
+          </h2>
+          <h2>
+            <span style="font-weight: bold">Telephone</span> :<span
+              id="ClientPhone"
+            ></span>
+          </h2>
+          <div class="bail_detail">
+            <h2>Réf de bon : <span id="reffacture"></span></h2>
+            <h2 id="date"></h2>
+          </div>
+        </div>
+        <div class="table_container">
+          <table class="facture_table">
+            <thead>
+              <tr>
+                <th>Produits</th>
+                <th>Prix Unité</th>
+                <th>Qte</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </section>
+      <div class="footer">
+        <h2 id="societeDetails"></h2>
+        <h2 id="societeadresse"></h2>
+        <h2 id="societeaNum"></h2>
+        <h2 id="societeaData"></h2>
+      </div>
+    </section>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      ipcRenderer.on("proforma", (e, result) => {
+        let Produits = JSON.parse(result.produits);
+        const table = document.querySelector(".facture_table");
+        console.log("table", table);
+        Produits.forEach((p) => {
+          var node;
+          let child = document.createElement("tr");
+          let nom = document.createElement("td");
+          node = document.createTextNode(p.nom);
+          nom.appendChild(node);
+          child.appendChild(nom);
+          let category = document.createElement("td");
+          node = document.createTextNode(p.prix_vente + " DA");
+          category.appendChild(node);
+          child.appendChild(category);
+          let quantityAchete = document.createElement("td");
+          node = document.createTextNode(p.quantityAchete);
+          quantityAchete.appendChild(node);
+          child.appendChild(quantityAchete);
+          let Prix = document.createElement("td");
+          node = document.createTextNode(
+            p.quantityAchete * p.prix_vente + " DA"
+          );
+          Prix.appendChild(node);
+          child.appendChild(Prix);
+
+          table.appendChild(child);
+        });
+
+        let Client = JSON.parse(result.client);
+        console.log(Client);
+        let montant = result.prix_ttc;
+        let montantLettre = result.montantEnLettre;
+        let date = JSON.parse(result.date);
+        let societe = JSON.parse(result.societe);
+        let dateA = new Date();
+        document.querySelector("#reffacture").innerHTML = result.ref;
+        document.querySelector("#clientName").innerHTML =
+          Client.nom + " " + Client.prenom;
+        document.querySelector("#clientAdresse").innerHTML = Client.adresse;
+        document.querySelector("#ClientPhone").innerHTML = Client.num;
+        document.querySelector("#date").innerHTML =
+          "date :" + date.day + "/" + date.month + "/" + date.year;
+        document.querySelector("#societeName").innerHTML = societe.nom;
+        document.querySelector("#societeImg").setAttribute("src", result.logo);
+        document.querySelector("#societeDetails").innerHTML =
+          "Societe :" + societe.nom + "," + societe.description;
+        document.querySelector("#societeadresse").innerHTML =
+          "Adresse : " + societe.adresse;
+        document.querySelector("#societeaNum").innerHTML =
+          "Numero de telephone :" + societe.num + "/ email : " + societe.email;
+        document.querySelector("#societeaData").innerHTML =
+          "N.R.C : " +
+          societe.NRC +
+          " / N.I.F : " +
+          societe.NIF +
+          " / A.R.T : " +
+          societe.ART;
+      });
+      let { jsPDF } = require("jspdf");
+
+      document.querySelector("#Save_btn").addEventListener("click", () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>

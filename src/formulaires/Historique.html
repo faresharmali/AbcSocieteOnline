@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Historique</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="Save_btn">Imprimer</div>
+
+    <div class="logo_container">
+      <img id="societeImg"  />
+    </div>
+
+    <h1 class="historyTitle">Historique des ventes</h1>
+    <h2 class="historystuff" id="Date">Date : </h2>
+    <h2 class="historystuff" id="periode">Periode : </h2>
+    <h2 class="historystuff" id="total"> </h2>
+
+    <div class="History_table_container"></div>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      ipcRenderer.on("History", (e, result) => {
+        console.log(result)
+        document.querySelector("#societeImg").setAttribute("src", result.logo);
+
+   
+        const addData = (dataList) => {
+          let table = document.createElement("table");
+          table.setAttribute("id", "tableStyle");
+          let row = document.createElement("tr");
+          let Column1 = document.createElement("th");
+          Column1.append(document.createTextNode("N°"));
+          let Column0
+          if(result.type=="vente"){
+             Column0 = document.createElement("th");
+            Column0.append(document.createTextNode("Client"));
+          }else{
+            Column0 = document.createElement("th");
+            Column0.append(document.createTextNode("Fournisseur"));
+          }
+          let Column2 = document.createElement("th");
+          Column2.append(document.createTextNode("Produit"));
+          let Column5 = document.createElement("th");
+          Column5.append(document.createTextNode("Qte"));
+          let Column6 = document.createElement("th");
+          Column6.append(document.createTextNode("Prix Total	"));
+          let Column7 = document.createElement("th");
+          Column7.append(document.createTextNode("Date"));
+          row.appendChild(Column1);
+          row.appendChild(Column0);
+          row.appendChild(Column2);
+
+          row.appendChild(Column5);
+          row.appendChild(Column6);
+          row.appendChild(Column7);
+          table.appendChild(row);
+          dataList.forEach((d) => {
+            row = document.createElement("tr");
+            Column1 = document.createElement("td");
+            Column1.append(document.createTextNode(result.Data.indexOf(d)+1));
+            if( result.type=="vente"){
+              Column0 = document.createElement("td");
+            Column0.append(document.createTextNode(JSON.parse(d.client).nom+" "+JSON.parse(d.client).prenom));
+            }else{
+              Column0 = document.createElement("td");
+            Column0.append(document.createTextNode(JSON.parse(d.fournisseur).Nom+" "+JSON.parse(d.fournisseur).prenom));
+            }
+           
+            Column2 = document.createElement("td");
+            Column2.append(document.createTextNode(d.produit));
+  
+            Column5 = document.createElement("td");
+            Column5.append(document.createTextNode(d.quantity));
+            Column6 = document.createElement("td");
+            Column6.append(document.createTextNode(d.prix_total+" DA"));
+            Column7 = document.createElement("td");
+            Column7.append(
+              document.createTextNode(
+                JSON.parse(d.date).day +
+                  "/" +
+                  JSON.parse(d.date).month +
+                  "/" +
+                  JSON.parse(d.date).year
+              )
+            );
+            row.appendChild(Column1);
+            row.appendChild(Column0);
+            row.appendChild(Column2);
+
+            row.appendChild(Column5);
+            row.appendChild(Column6);
+            row.appendChild(Column7);
+            table.appendChild(row);
+          });
+          document.querySelector(".History_table_container").appendChild(table);
+        };
+        let date=new Date()
+        document.querySelector(".historyTitle").innerHTML = result.title;
+        document.querySelector("#periode").innerHTML ="Periode : "+ result.periode;
+        document.querySelector("#Date").innerHTML ="Date : "+ date.getDate()+"/"+(date.getMonth()+1)+"/"+date.getFullYear();
+        document.querySelector("#total").innerHTML ="Total : "+ result.total+" Da";
+
+        let pages
+        if((result.Data.length/20)%1==0) pages=result.Data.length
+        else pages=Math. trunc(result.Data.length/20)+1
+        console.log(pages)
+
+       for(let i=0;i<pages;i++){
+           addData(result.Data.slice(20*i,20*(i+1)));
+       }
+      });
+      document.querySelector("#Save_btn").addEventListener("click", () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>

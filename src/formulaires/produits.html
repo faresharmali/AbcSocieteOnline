@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Historique</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="Save_btn">Imprimer</div>
+
+    <div class="logo_container">
+      <img id="societeImg" />
+    </div>
+    <h1 class="historyTitle">Liste Des Produits</h1>
+    <h2 class="historystuff" id="Date">Periode :</h2>
+
+    <div class="History_table_container"></div>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      ipcRenderer.on("History", (e, result) => {
+        document.querySelector("#societeImg").setAttribute("src", result.logo);
+        const addData = (dataList) => {
+          let table = document.createElement("table");
+          table.setAttribute("id", "tableStyle");
+          let row = document.createElement("tr");
+          let Column1 = document.createElement("th");
+          Column1.append(document.createTextNode("N°"));
+          let Column2 = document.createElement("th");
+          Column2.append(document.createTextNode("Produit"));
+          let Column3 = document.createElement("th");
+          Column3.append(document.createTextNode("Marque"));
+          let Column4 = document.createElement("th");
+          Column4.append(document.createTextNode("Prix D'achat"));
+          let Column5 = document.createElement("th");
+          Column5.append(document.createTextNode("Prix De Vente"));
+
+          row.appendChild(Column1);
+          row.appendChild(Column2);
+          row.appendChild(Column3);
+          row.appendChild(Column4);
+          row.appendChild(Column5);
+
+          table.appendChild(row);
+          dataList.forEach((b) => {
+            row = document.createElement("tr");
+            Column1 = document.createElement("td");
+            Column1.append(document.createTextNode(result.Data.indexOf(b) + 1));
+            Column2 = document.createElement("td");
+            Column2.append(document.createTextNode(b.nom));
+            Column3 = document.createElement("td");
+            Column3.append(document.createTextNode(b.Marque));
+            Column4 = document.createElement("td");
+            console.log(JSON.parse(b.prix_achat))
+            Column4.append(
+              document.createTextNode(
+                (JSON.parse(b.prix_achat).prix.reduce((a,x)=>a+x)/JSON.parse(b.prix_achat).prix.length) + " Da"
+              )
+            );
+            Column5 = document.createElement("td");
+            Column5.append(document.createTextNode(b.prix_vente + " Da"));
+
+            row.appendChild(Column1);
+            row.appendChild(Column2);
+            row.appendChild(Column3);
+            row.appendChild(Column4);
+            row.appendChild(Column5);
+
+            table.appendChild(row);
+          });
+          document.querySelector(".History_table_container").appendChild(table);
+        };
+        let date = new Date();
+        document.querySelector("#Date").innerHTML =
+          "Date : " +
+          date.getDate() +
+          "/" +
+          (date.getMonth() + 1) +
+          "/" +
+          date.getFullYear();
+
+        document.querySelector(".historyTitle").innerHTML = result.title;
+        let pages;
+        if ((result.Data.length / 10) % 1 == 0) pages = result.Data.length;
+        else pages = Math.trunc(result.Data.length / 10) + 1;
+        console.log(pages);
+
+        for (let i = 0; i < pages; i++) {
+          addData(result.Data.slice(10 * i, 10 * (i + 1)));
+        }
+      });
+      document.querySelector("#Save_btn").addEventListener("click", () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>
